@@ -4,7 +4,9 @@ use std::vec_ng::Vec;
 use std::iter::AdditiveIterator;
 
 fn main() {
-    println!("{0}", semiParallelNQueens(15));
+    for num in range(0i32, 18i32) {
+        println!("{}", semiParallelNQueens(num));
+    }
 }
 
 /*           _
@@ -18,7 +20,7 @@ fn main() {
 // Solves n-queens using a depth-first, backtracking
 // solution. Returns the number of solutions for a
 // given n.
-fn nQueens(n: i16) -> i16 {
+fn nQueens(n: i32) -> uint {
     // Pass off to our helper function.
     return nQueensHelper((1 << n) -1, 0, 0, 0);
 }
@@ -42,7 +44,7 @@ fn nQueens(n: i16) -> i16 {
 //
 // This implementation is optimized for speed and memory by using
 // integers and bit shifting instead of arrays for storing the conflicts.
-fn nQueensHelper(allOnes: i16, leftDiags: i16, columns: i16, rightDiags: i16) -> i16 {
+fn nQueensHelper(allOnes: i32, leftDiags: i32, columns: i32, rightDiags: i32) -> uint {
     // allOnes is a special value that simply has all 1s in the first
     // n positions and 0s elsewhere. We can use it to clear out
     // areas that we don't care about.
@@ -97,14 +99,14 @@ fn nQueensHelper(allOnes: i16, leftDiags: i16, columns: i16, rightDiags: i16) ->
 
     // If columns is all blocked (i.e. if it is all ones) then we
     // have arrived at a solution because we have placed n queens.
-    return solutions + ((columns == allOnes) as i16)
+    return solutions + ((columns == allOnes) as uint)
 }
 
 // This is the same as the regular nQueens except it creates
 // n threads in which to to do the work.
 //
 // This is 10x slower on my machine, though your mileage may vary.
-fn semiParallelNQueens(n: i16) -> i16 {
+fn semiParallelNQueens(n: i32) -> uint {
     let allOnes = (1 << n) - 1;
     let columns = 0;
     let leftDiags = 0;
@@ -130,26 +132,33 @@ fn semiParallelNQueens(n: i16) -> i16 {
     for receiver in receivers.iter() {
         results.push(receiver.recv());
     }
-    return results.iter().map(|&x| x).sum() + ((columns == allOnes) as i16)
+    return results.iter().map(|&x| x).sum() + ((columns == allOnes) as uint)
 }
 
 // Tests
 
 #[test]
 fn test_nQueens() {
-    let mut solutions = Vec::new();
-    for num in range(0, 9i16) {
-        solutions.push(nQueens(num));
+    let real = vec!(1, 1, 0, 0, 2, 10, 4, 40, 92u);
+    for num in range(0, 9i32) {
+        assert!(nQueens(num) == *real.get(num as uint));
     }
-    assert!(solutions == vec!(1, 1, 0, 0, 2, 10, 4, 40, 92i16));
+}
+
+#[test]
+fn test_parallel_nQueens() {
+    let real = vec!(1, 1, 0, 0, 2, 10, 4, 40, 92u);
+    for num in range(0, 9i32) {
+        assert!(semiParallelNQueens(num) == *real.get(num as uint));
+    }
 }
 
 #[bench]
 fn bench_nQueens(b: &mut test::BenchHarness) {
-    b.iter(|| { test::black_box(nQueens(12)); });
+    b.iter(|| { test::black_box(nQueens(16)); });
 }
 
 #[bench]
 fn bench_semiParallelNQueens(b: &mut test::BenchHarness) {
-    b.iter(|| { test::black_box(semiParallelNQueens(12)); });
+    b.iter(|| { test::black_box(semiParallelNQueens(16)); });
 }
