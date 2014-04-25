@@ -128,7 +128,6 @@ fn semiParallelNQueens(n: i16) -> i16 {
 
     let mut results = Vec::new();
     for receiver in receivers.iter() {
-        println!("Received!");
         results.push(receiver.recv());
     }
     return results.iter().map(|&x| x).sum() + ((columns == allOnes) as i16)
