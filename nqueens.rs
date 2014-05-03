@@ -109,7 +109,8 @@ fn nQueensHelper(allOnes: i32, leftDiags: i32, columns: i32, rightDiags: i32) ->
 // This is the same as the regular nQueens except it creates
 // n threads in which to to do the work.
 //
-// This is 10x slower on my machine, though your mileage may vary.
+// This is much slower for smaller numbers (under 16~17) but overcomes
+// the sequential algorithm after that.
 fn semiParallelNQueens(n: i32) -> uint {
     let allOnes = (1 << n) - 1;
     let columns = 0;
