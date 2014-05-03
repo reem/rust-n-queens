@@ -1,10 +1,14 @@
 extern crate test;
 
-use std::vec_ng::Vec;
+use std::vec::Vec;
 use std::iter::AdditiveIterator;
 
+#[cfg(test)]
+use test::Bencher;
+
+#[cfg(not(test))]
 fn main() {
-    for num in range(0i32, 18i32) {
+    for num in range(0i32, 16i32) {
         println!("{}", semiParallelNQueens(num));
     }
 }
@@ -154,11 +158,11 @@ fn test_parallel_nQueens() {
 }
 
 #[bench]
-fn bench_nQueens(b: &mut test::BenchHarness) {
+fn bench_nQueens(b: &mut Bencher) {
     b.iter(|| { test::black_box(nQueens(16)); });
 }
 
 #[bench]
-fn bench_semiParallelNQueens(b: &mut test::BenchHarness) {
+fn bench_semiParallelNQueens(b: &mut Bencher) {
     b.iter(|| { test::black_box(semiParallelNQueens(16)); });
 }
