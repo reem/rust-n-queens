@@ -27,7 +27,7 @@ fn main() {
 // given n.
 fn nQueens(n: i32) -> uint {
     // Pass off to our helper function.
-    return nQueensHelper((1 << n) -1, 0, 0, 0);
+    return nQueensHelper((1 << n as uint) -1, 0, 0, 0);
 }
 
 // The meat of the algorithm is in here, a recursive helper function
@@ -113,7 +113,7 @@ fn nQueensHelper(allOnes: i32, leftDiags: i32, columns: i32, rightDiags: i32) ->
 // This is much slower for smaller numbers (under 16~17) but overcomes
 // the sequential algorithm after that.
 fn semiParallelNQueens(n: i32) -> uint {
-    let allOnes = (1 << n) - 1;
+    let allOnes = (1 << n as uint) - 1;
     let columns = 0;
     let leftDiags = 0;
     let rightDiags = 0;
