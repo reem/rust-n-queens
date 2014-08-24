@@ -1,0 +1,6 @@
+[package]
+
+name = "nqueens"
+authors = ["Jonathan Reem"]
+version = "1.0.0"
+

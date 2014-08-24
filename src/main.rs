@@ -1,15 +1,14 @@
-extern crate test;
-
-use std::vec::Vec;
-use std::iter::AdditiveIterator;
-
-#[cfg(test)]
-use test::Bencher;
+#[cfg(test)] extern crate test;
+#[cfg(test)] use test::Bencher;
 
 #[cfg(not(test))]
 fn main() {
     for num in range(0i32, 16i32) {
-        println!("{}", semiParallelNQueens(num));
+        println!("{}", parallel_n_queens(num));
+    }
+
+    for num in range(0i32, 16i32) {
+        println!("{}", n_queens(num));
     }
 }
 
@@ -25,9 +24,9 @@ fn main() {
 // Solves n-queens using a depth-first, backtracking
 // solution. Returns the number of solutions for a
 // given n.
-fn nQueens(n: i32) -> uint {
+fn n_queens(n: i32) -> uint {
     // Pass off to our helper function.
-    return nQueensHelper((1 << n as uint) -1, 0, 0, 0);
+    return n_queens_helper((1 << n as uint) -1, 0, 0, 0);
 }
 
 // The meat of the algorithm is in here, a recursive helper function
@@ -49,7 +48,7 @@ fn nQueens(n: i32) -> uint {
 //
 // This implementation is optimized for speed and memory by using
 // integers and bit shifting instead of arrays for storing the conflicts.
-fn nQueensHelper(allOnes: i32, leftDiags: i32, columns: i32, rightDiags: i32) -> uint {
+fn n_queens_helper(allOnes: i32, leftDiags: i32, columns: i32, rightDiags: i32) -> uint {
     // allOnes is a special value that simply has all 1s in the first
     // n positions and 0s elsewhere. We can use it to clear out
     // areas that we don't care about.
@@ -85,7 +84,7 @@ fn nQueensHelper(allOnes: i32, leftDiags: i32, columns: i32, rightDiags: i32) ->
 
         // Make a recursive call. This is where we infer the conflicts
         // for the next row.
-        solutions += nQueensHelper(
+        solutions += n_queens_helper(
             allOnes,
             // We add a conflict in the current spot and then shift left,
             // which has the desired effect of moving all of the conflicts
@@ -107,12 +106,12 @@ fn nQueensHelper(allOnes: i32, leftDiags: i32, columns: i32, rightDiags: i32) ->
     return solutions + ((columns == allOnes) as uint)
 }
 
-// This is the same as the regular nQueens except it creates
+// This is the same as the regular n_queens except it creates
 // n threads in which to to do the work.
 //
 // This is much slower for smaller numbers (under 16~17) but overcomes
 // the sequential algorithm after that.
-fn semiParallelNQueens(n: i32) -> uint {
+fn parallel_n_queens(n: i32) -> uint {
     let allOnes = (1 << n as uint) - 1;
     let columns = 0;
     let leftDiags = 0;
@@ -126,7 +125,7 @@ fn semiParallelNQueens(n: i32) -> uint {
         let (tx, rx) = channel();
         receivers.push(rx);
         spawn(proc() {
-            tx.send(nQueensHelper(
+            tx.send(n_queens_helper(
                 allOnes,
                 (leftDiags | spot) << 1,
                 (columns | spot),
@@ -134,37 +133,37 @@ fn semiParallelNQueens(n: i32) -> uint {
         });
     }
 
-    let mut results = Vec::new();
+    let mut results = 0u;
     for receiver in receivers.iter() {
-        results.push(receiver.recv());
+        results += receiver.recv();
     }
-    return results.iter().map(|&x| x).sum() + ((columns == allOnes) as uint)
+    return results + ((columns == allOnes) as uint)
 }
 
 // Tests
 
 #[test]
-fn test_nQueens() {
+fn test_n_queens() {
     let real = vec!(1, 1, 0, 0, 2, 10, 4, 40, 92u);
     for num in range(0, 9i32) {
-        assert!(nQueens(num) == *real.get(num as uint));
+        assert!(n_queens(num) == *real.get(num as uint));
     }
 }
 
 #[test]
-fn test_parallel_nQueens() {
+fn test_parallel_n_queens() {
     let real = vec!(1, 1, 0, 0, 2, 10, 4, 40, 92u);
     for num in range(0, 9i32) {
-        assert!(semiParallelNQueens(num) == *real.get(num as uint));
+        assert!(parallel_n_queens(num) == *real.get(num as uint));
     }
 }
 
 #[bench]
-fn bench_nQueens(b: &mut Bencher) {
-    b.iter(|| { test::black_box(nQueens(16)); });
+fn bench_n_queens(b: &mut Bencher) {
+    b.iter(|| { test::black_box(n_queens(14)); });
 }
 
 #[bench]
-fn bench_semiParallelNQueens(b: &mut Bencher) {
-    b.iter(|| { test::black_box(semiParallelNQueens(16)); });
+fn bench_parallel_n_queens(b: &mut Bencher) {
+    b.iter(|| { test::black_box(parallel_n_queens(14)); });
 }
